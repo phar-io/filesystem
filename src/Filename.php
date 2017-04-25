@@ -110,6 +110,22 @@ class Filename {
     }
 
     /**
+     * @param \DateTimeImmutable $date
+     * @return bool
+     */
+    public function isOlderThan(\DateTimeImmutable $date) {
+        return $this->getLastModified()->isOlderThan($date);
+    }
+
+    /**
+     * @return LastModifiedDate
+     * @throws FilenameException
+     */
+    private function getLastModified() {
+        return LastModifiedDate::fromTimestamp(filemtime($this->asString()));
+    }
+
+    /**
      * @return string
      */
     private function getBasename() {
