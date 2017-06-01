@@ -151,6 +151,13 @@ class Directory {
     }
 
     /**
+     * @return bool
+     */
+    public function isWritable() {
+        return is_writable($this->path);
+    }
+
+    /**
      * @param string $path
      *
      * @throws DirectoryException
