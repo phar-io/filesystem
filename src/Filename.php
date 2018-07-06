@@ -118,6 +118,15 @@ class Filename {
     }
 
     /**
+     * @return Filename
+     */
+    public function withoutExtension() {
+        $pathinfo = pathinfo($this->asString());
+
+        return new Filename($pathinfo['dirname'] . '/' . $pathinfo['filename']);
+    }
+
+    /**
      * @return LastModifiedDate
      * @throws FilenameException
      */

@@ -42,4 +42,11 @@ class FilenameTest extends TestCase {
         $this->assertEquals($expectedFile, $name->read());
     }
 
+    public function testReturnsExpectedFilenameWithoutExtension() {
+        $filename = new Filename(__DIR__ . '/foo/bar.txt');
+        $expected = new Filename(__DIR__ . '/foo/bar');
+
+        $this->assertEquals($expected, $filename->withoutExtension());
+    }
+
 }
