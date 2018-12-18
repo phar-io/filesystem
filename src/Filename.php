@@ -56,6 +56,27 @@ class Filename {
     /**
      * @return bool
      */
+    public function isWritable() {
+        if (is_writeable($this->asString())) {
+            return true;
+        }
+
+        if (is_link($this->asString())) {
+            // file_exists follows symlinks and returns false if the linked file does not exist
+            // so we need to check first if the file is a link
+            return false;
+        }
+
+        if (file_exists($this->asString())) {
+            return false;
+        }
+
+        return $this->getDirectory()->isWritable();
+    }
+
+    /**
+     * @return bool
+     */
     public function isExecutable() {
         return is_executable($this->name);
     }

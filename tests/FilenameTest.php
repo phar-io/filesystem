@@ -49,4 +49,33 @@ class FilenameTest extends TestCase {
         $this->assertEquals($expected, $filename->withoutExtension());
     }
 
+    public function testIsWritable() {
+        $filename = new Filename(__DIR__ . '/foo/bar.txt');
+        $linkFilename = new Filename(__DIR__ . '/foo/link');
+
+        $this->assertFalse($filename->exists());
+        $this->assertTrue($filename->isWritable());
+
+        try {
+            touch($filename->asString());
+            $this->assertTrue($filename->exists());
+            $this->assertTrue($filename->isWritable());
+
+            // Make file non writable
+            chmod($filename->asString(), 0000);
+            $this->assertFalse($filename->isWritable());
+
+            // Create link to non writable file
+            link($filename->asString(), $linkFilename->asString());
+            $this->assertFalse($linkFilename->isWritable());
+
+            // Make file writable
+            chmod($filename->asString(), 0644);
+            $this->assertTrue($linkFilename->isWritable());
+        } finally {
+            unlink($filename->asString());
+            unlink($linkFilename->asString());
+        }
+    }
+
 }
