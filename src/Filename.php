@@ -131,6 +131,20 @@ class Filename {
     }
 
     /**
+     * @param string $newName
+     *
+     * @return Filename|false
+     */
+    public function rename($newName) {
+        $newNameFile = $this->getDirectory()->file($newName);
+        $result = @rename($this->asString(), $newNameFile->asString());
+        if ($result === false) {
+            return false;
+        }
+        return $newNameFile;
+    }
+
+    /**
      * @param \DateTimeImmutable $date
      * @return bool
      */

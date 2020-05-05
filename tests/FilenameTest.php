@@ -78,4 +78,52 @@ class FilenameTest extends TestCase {
         }
     }
 
+    public function testRename() {
+        $filename = new Filename(__DIR__ . '/foo/bar.txt');
+        $newFilename = new Filename(__DIR__ . '/foo/bar2.txt');
+
+        $this->assertFalse($filename->exists());
+        $this->assertFalse($newFilename->exists());
+        $this->assertTrue($filename->isWritable());
+
+        try {
+            touch($filename->asString());
+            $this->assertTrue($filename->exists());
+            $this->assertTrue($filename->isWritable());
+
+            $renamed = $filename->rename('bar2.txt');
+            $this->assertEquals($renamed->asString(), $newFilename->asString());
+            $this->assertTrue($newFilename->exists());
+            $this->assertFalse($filename->exists());
+        } finally {
+            @unlink($filename->asString());
+            @unlink($newFilename->asString());
+        }
+    }
+
+    public function testFailedRename() {
+        $filename = new Filename(__DIR__ . '/foo/bar.txt');
+
+        $this->assertFalse($filename->exists());
+        $this->assertTrue($filename->isWritable());
+
+        try {
+            touch($filename->asString());
+            $this->assertTrue($filename->exists());
+            $this->assertTrue($filename->isWritable());
+
+            // Make parent directory non writable
+            $mode = fileperms($filename->getDirectory());
+            chmod($filename->getDirectory(), 0000);
+
+            $renamed = $filename->rename('bar2.txt');
+            $this->assertFalse($renamed);
+        } finally {
+            if (isset($mode)) {
+                chmod($filename->getDirectory(), $mode);
+            }
+            unlink($filename->asString());
+        }
+    }
+
 }
