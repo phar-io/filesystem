@@ -7,19 +7,14 @@ class LastModifiedDate {
      */
     private $dateTime;
 
-    /**
-     * @param \DateTimeImmutable $dateTime
-     */
     public function __construct(\DateTimeImmutable $dateTime) {
         $this->dateTime = $dateTime;
     }
 
     /**
-     * @param int $timestamp
      * @throws FilenameException
-     * @return LastModifiedDate
      */
-    public static function fromTimestamp(int $timestamp) {
+    public static function fromTimestamp(int $timestamp): LastModifiedDate {
         $dateTime = \DateTimeImmutable::createFromFormat('U',   (string)$timestamp);
         if (!$dateTime) {
             throw new FilenameException('Invalid last modified date');
@@ -28,11 +23,7 @@ class LastModifiedDate {
         return new self($dateTime);
     }
 
-    /**
-     * @param \DateTimeImmutable $date
-     * @return bool
-     */
-    public function isOlderThan(\DateTimeImmutable $date) {
+    public function isOlderThan(\DateTimeImmutable $date): bool {
         return $this->dateTime < $date;
     }
 }
