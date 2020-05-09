@@ -102,7 +102,7 @@ class Directory {
     }
 
     public function withAbsolutePath(): Directory {
-        return new Directory(realpath($this));
+        return new Directory(realpath($this->asString()));
     }
 
     public function isWritable(): bool {
