@@ -106,7 +106,7 @@ class Filename {
     }
 
     private function getBasename(): string {
-        return pathinfo($this, PATHINFO_BASENAME);
+        return pathinfo($this->asString(), PATHINFO_BASENAME);
     }
 
 }
