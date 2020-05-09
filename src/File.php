@@ -1,45 +1,28 @@
-<?php
+<?php declare(strict_types=1);
 namespace PharIo\FileSystem;
 
 class File {
 
-    /**
-     * @var Filename
-     */
+    /** @var Filename */
     private $filename;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $content;
 
-    /**
-     * @param Filename $filename
-     * @param string   $content
-     */
-    public function __construct(Filename $filename, $content) {
+    public function __construct(Filename $filename, string $content) {
         $this->filename = $filename;
         $this->content = $content;
     }
 
-    /**
-     * @return Filename
-     */
-    public function getFilename() {
+    public function getFilename(): Filename {
         return $this->filename;
     }
 
-    /**
-     * @param Filename $filename
-     */
     public function saveAs(Filename $filename) {
         file_put_contents($filename->asString(), $this->getContent());
     }
 
-    /**
-     * @return string
-     */
-    public function getContent() {
+    public function getContent(): string {
         return $this->content;
     }
 }

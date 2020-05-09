@@ -25,11 +25,6 @@ class FilenameTest extends TestCase {
         $this->assertTrue($name->exists());
     }
 
-    public function testInvalidTypeForFilenameThrowsException() {
-        $this->expectException(\InvalidArgumentException::class);
-        new Filename(new \stdClass);
-    }
-
     public function testReadThrowsExceptionIfFileDoesNotExist() {
         $name = new Filename('/does/not/exist');
         $this->expectException(\RuntimeException::class);
@@ -78,7 +73,7 @@ class FilenameTest extends TestCase {
         }
     }
 
-    public function testRename() {
+    public function testRenameTo() {
         $filename = new Filename(__DIR__ . '/foo/bar.txt');
         $newFilename = new Filename(__DIR__ . '/foo/bar2.txt');
 
@@ -91,7 +86,7 @@ class FilenameTest extends TestCase {
             $this->assertTrue($filename->exists());
             $this->assertTrue($filename->isWritable());
 
-            $renamed = $filename->rename('bar2.txt');
+            $renamed = $filename->renameTo('bar2.txt');
             $this->assertEquals($renamed->asString(), $newFilename->asString());
             $this->assertTrue($newFilename->exists());
             $this->assertFalse($filename->exists());
@@ -101,7 +96,7 @@ class FilenameTest extends TestCase {
         }
     }
 
-    public function testFailedRename() {
+    public function testFailedRenameTo() {
         $filename = new Filename(__DIR__ . '/foo/bar.txt');
 
         $this->assertFalse($filename->exists());
@@ -118,7 +113,7 @@ class FilenameTest extends TestCase {
             $mode = fileperms($filename->getDirectory());
             chmod($filename->getDirectory(), 0000);
 
-            $filename->rename('bar2.txt');
+            $filename->renameTo('bar2.txt');
         } finally {
             if (isset($mode)) {
                 chmod($filename->getDirectory(), $mode);

@@ -1,63 +1,29 @@
-<?php
+<?php declare(strict_types = 1);
 namespace PharIo\FileSystem;
 
 class Filename {
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $name;
 
-    /**
-     * @param string $name
-     */
-    public function __construct($name) {
-        $this->ensureString($name);
+    public function __construct(string $name) {
         $this->name = $name;
     }
 
-    /**
-     * @param string $name
-     *
-     * @throws \InvalidArgumentException
-     */
-    private function ensureString($name) {
-        if (!is_string($name)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'String expected but "%s" received',
-                    is_object($name) ? get_class($name) : gettype($name)
-                )
-            );
-        }
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString() {
+    public function __toString(): string {
         return $this->asString();
     }
 
-    /**
-     * @return string
-     */
-    public function asString() {
+    public function asString(): string {
         return $this->name;
     }
 
-    /**
-     * @return bool
-     */
-    public function exists() {
+    public function exists(): bool {
         return file_exists($this->name);
     }
 
-    /**
-     * @return bool
-     */
-    public function isWritable() {
-        if (is_writeable($this->asString())) {
+    public function isWritable(): bool {
+        if (is_writable($this->asString())) {
             return true;
         }
 
@@ -74,69 +40,41 @@ class Filename {
         return $this->getDirectory()->isWritable();
     }
 
-    /**
-     * @return bool
-     */
-    public function isExecutable() {
+    public function isExecutable(): bool {
         return is_executable($this->name);
     }
 
-    /**
-     * @return File
-     */
-    public function read() {
+    public function read(): File {
         if (!$this->exists()) {
             throw new \RuntimeException('Cannot read - File does not (yet?) exist');
         }
         return new File($this, file_get_contents($this->asString()));
     }
 
-    /**
-     * @return Filename
-     */
-    public function withAbsolutePath() {
+    public function withAbsolutePath(): Filename {
         return $this->getDirectory()->withAbsolutePath()->file($this->getBasename());
     }
 
-    /**
-     * @return Directory
-     */
-    public function getDirectory() {
-        return new Directory(dirname($this));
+    public function getDirectory(): Directory {
+        return new Directory(dirname($this->asString()));
     }
 
-    /**
-     * @param Directory $directory
-     *
-     * @return Filename
-     */
-    public function getRelativePathTo(Directory $directory) {
+    public function getRelativePathTo(Directory $directory): Filename {
         return new Filename($this->getDirectory()->getRelativePathTo($directory) . $this->getBasename());
     }
 
-    /**
-     * @param string $content
-     *
-     * @return int
-     */
-    public function putContent($content) {
+    public function putContent(string $content): int {
         return file_put_contents($this->asString(), $content);
     }
 
-    /**
-     * @return bool
-     */
-    public function delete() {
+    public function delete(): bool {
         return unlink($this->asString());
     }
 
     /**
-     * @param string $newName
-     *
-     * @return Filename
      * @throws FilenameException
      */
-    public function rename($newName) {
+    public function renameTo(string $newName): Filename {
         $newNameFile = $this->getDirectory()->file($newName);
         $result = @rename($this->asString(), $newNameFile->asString());
         if ($result === false) {
@@ -151,34 +89,23 @@ class Filename {
     }
 
     /**
-     * @param \DateTimeImmutable $date
      * @return bool
      */
-    public function isOlderThan(\DateTimeImmutable $date) {
+    public function isOlderThan(\DateTimeImmutable $date): bool {
         return $this->getLastModified()->isOlderThan($date);
     }
 
-    /**
-     * @return Filename
-     */
-    public function withoutExtension() {
+    public function withoutExtension(): Filename {
         $pathinfo = pathinfo($this->asString());
 
         return new Filename($pathinfo['dirname'] . '/' . $pathinfo['filename']);
     }
 
-    /**
-     * @return LastModifiedDate
-     * @throws FilenameException
-     */
-    private function getLastModified() {
+    private function getLastModified(): LastModifiedDate {
         return LastModifiedDate::fromTimestamp(filemtime($this->asString()));
     }
 
-    /**
-     * @return string
-     */
-    private function getBasename() {
+    private function getBasename(): string {
         return pathinfo($this, PATHINFO_BASENAME);
     }
 

@@ -11,7 +11,7 @@ class DirectoryTest extends TestCase {
 
     private $testDir;
 
-    protected function setUp() {
+    protected function setUp(): void {
         $this->testDir = __DIR__ . '/fixtures/directory';
         if (file_exists(sys_get_temp_dir() . '/test')) {
             rmdir(sys_get_temp_dir() . '/test');
@@ -55,10 +55,10 @@ class DirectoryTest extends TestCase {
         $this->assertEquals('child', basename((string)$child));
     }
 
-    public function testThrowsExceptionOnNonIntegerMode() {
+    public function testThrowsExceptionInvalidMode() {
         $this->expectException(DirectoryException::class);
         $this->expectExceptionCode(DirectoryException::InvalidMode);
-        (new Directory('/', 'abc'));
+        (new Directory('/', 9999));
         restore_error_handler();
     }
 

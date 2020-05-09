@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 namespace PharIo\FileSystem;
 
 class LastModifiedDate {
@@ -19,9 +19,9 @@ class LastModifiedDate {
      * @throws FilenameException
      * @return LastModifiedDate
      */
-    public static function fromTimestamp($timestamp) {
-        $dateTime = \DateTimeImmutable::createFromFormat('U', $timestamp);
-        if (false === $dateTime) {
+    public static function fromTimestamp(int $timestamp) {
+        $dateTime = \DateTimeImmutable::createFromFormat('U',   (string)$timestamp);
+        if (!$dateTime) {
             throw new FilenameException('Invalid last modified date');
         }
 

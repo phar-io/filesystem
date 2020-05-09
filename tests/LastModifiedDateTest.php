@@ -13,7 +13,7 @@ class LastModifiedDateTest extends TestCase
             new \DateTimeImmutable('25.04.2017 10:31:55')
         );
 
-        $actual = LastModifiedDate::fromTimestamp(1493116315);
+        $actual = LastModifiedDate::fromTimestamp('1493116315');
 
         $this->assertEquals($expected, $actual);
     }

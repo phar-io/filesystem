@@ -1,24 +1,16 @@
-<?php
+<?php declare(strict_types = 1);
 namespace PharIo\FileSystem;
 
 class Directory {
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $path;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $mode;
 
-    /**
-     * @param string $path
-     * @param int    $mode
-     */
-    public function __construct($path, $mode = 0775) {
-        $this->ensureModeIsInteger($mode);
+    public function __construct(string $path, int $mode = 0775) {
+        $this->ensureValidMode($mode);
         $this->mode = $mode;
 
         $this->ensureExists($path);
@@ -26,15 +18,11 @@ class Directory {
         $this->path = realpath($path);
     }
 
-    /**
+    /*
      * Taken from http://stackoverflow.com/questions/2637945/getting-relative-path-from-absolute-path-in-php#comment18071708_2637945
      * Credits go to http://stackoverflow.com/users/208809/gordon
-     *
-     * @param Directory $directory
-     *
-     * @return string
      */
-    public function getRelativePathTo(Directory $directory) {
+    public function getRelativePathTo(Directory $directory): string {
         $to = (string)$this;
         $from = (string)$directory;
         // some compatibility fixes for Windows paths
@@ -69,26 +57,11 @@ class Directory {
     }
 
     /**
-     * @param int $value
-     *
-     * @throws DirectoryException
-     */
-    private function ensureModeIsInteger($value) {
-        if (is_int($value)) {
-            return;
-        }
-        throw new DirectoryException(
-            sprintf('Mode "%s" is not of integer type', $value),
-            DirectoryException::InvalidMode
-        );
-    }
-
-    /**
      * @param string $path
      *
      * @throws DirectoryException
      */
-    private function ensureExists($path) {
+    private function ensureExists(string $path) {
         if (file_exists($path)) {
             return;
         }
@@ -105,64 +78,41 @@ class Directory {
         }
     }
 
-    /**
-     * @param string $child
-     * @param int    $mode
-     *
-     * @return Directory
-     */
-    public function child($child, $mode = null) {
+    public function child(string $child, int $mode = null): Directory {
         return new Directory(
             $this->path . DIRECTORY_SEPARATOR . $child,
             $mode !== null ? $mode : $this->mode
         );
     }
 
-    /**
-     * @param string $child
-     *
-     * @return bool
-     */
-    public function hasChild($child) {
+    public function hasChild(string $child): bool {
         return file_exists($this->path . DIRECTORY_SEPARATOR . $child);
     }
 
-    /**
-     * @param string $filename
-     *
-     * @return Filename
-     */
-    public function file($filename) {
+    public function file(string $filename): Filename {
         return new Filename($this->path . DIRECTORY_SEPARATOR . $filename);
     }
 
-    /**
-     * @return string
-     */
-    public function __toString() {
+    public function __toString(): string {
+        return $this->asString();
+    }
+
+    public function asString(): string {
         return $this->path;
     }
 
-    /**
-     * @return Directory
-     */
-    public function withAbsolutePath() {
+    public function withAbsolutePath(): Directory {
         return new Directory(realpath($this));
     }
 
-    /**
-     * @return bool
-     */
-    public function isWritable() {
+    public function isWritable(): bool {
         return is_writable($this->path);
     }
 
     /**
-     * @param string $path
-     *
      * @throws DirectoryException
      */
-    private function ensureIsDirectory($path) {
+    private function ensureIsDirectory(string $path) {
         if (is_dir($path)) {
             return;
         }
@@ -170,5 +120,14 @@ class Directory {
             sprintf('Path %s exists but is not a directory', $path),
             DirectoryException::InvalidType
         );
+    }
+
+    private function ensureValidMode(int $mode) {
+        if ($mode < 0 || $mode > 777) {
+            throw new DirectoryException(
+                sprintf('Mode %d is not valid', $mode),
+                DirectoryException::InvalidMode
+            );
+        }
     }
 }
