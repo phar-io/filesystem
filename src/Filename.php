@@ -133,13 +133,19 @@ class Filename {
     /**
      * @param string $newName
      *
-     * @return Filename|false
+     * @return Filename
+     * @throws FilenameException
      */
     public function rename($newName) {
         $newNameFile = $this->getDirectory()->file($newName);
         $result = @rename($this->asString(), $newNameFile->asString());
         if ($result === false) {
-            return false;
+            $lastError = error_get_last();
+            $nativeError = new \RuntimeException(
+                sprintf('%s (line %d): %s', $lastError['file'], $lastError['line'], $lastError['message']),
+                $lastError['type']
+            );
+            throw new FilenameException('Unable to rename the file.', 0, $nativeError);
         }
         return $newNameFile;
     }

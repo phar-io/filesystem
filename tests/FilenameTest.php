@@ -106,6 +106,8 @@ class FilenameTest extends TestCase {
 
         $this->assertFalse($filename->exists());
         $this->assertTrue($filename->isWritable());
+        $this->expectException(FilenameException::class);
+        $this->expectExceptionMessage('Unable to rename the file.');
 
         try {
             touch($filename->asString());
@@ -116,8 +118,7 @@ class FilenameTest extends TestCase {
             $mode = fileperms($filename->getDirectory());
             chmod($filename->getDirectory(), 0000);
 
-            $renamed = $filename->rename('bar2.txt');
-            $this->assertFalse($renamed);
+            $filename->rename('bar2.txt');
         } finally {
             if (isset($mode)) {
                 chmod($filename->getDirectory(), $mode);
