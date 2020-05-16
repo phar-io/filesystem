@@ -11,7 +11,7 @@ class FilenameTest extends TestCase {
     public function testCanBeConvertedToString() {
         $this->assertEquals(
             'abc',
-            (string)(new Filename('abc'))
+            (new Filename('abc'))->asString()
         );
     }
 
@@ -45,8 +45,8 @@ class FilenameTest extends TestCase {
     }
 
     public function testIsWritable() {
-        $filename = new Filename(__DIR__ . '/foo/bar.txt');
-        $linkFilename = new Filename(__DIR__ . '/foo/link');
+        $filename = new Filename(__DIR__ . '/fixtures/writable/bar.txt');
+        $linkFilename = new Filename(__DIR__ . '/fixtures/writable/link');
 
         $this->assertFalse($filename->exists());
         $this->assertTrue($filename->isWritable());
@@ -70,55 +70,6 @@ class FilenameTest extends TestCase {
         } finally {
             unlink($filename->asString());
             unlink($linkFilename->asString());
-        }
-    }
-
-    public function testRenameTo() {
-        $filename = new Filename(__DIR__ . '/foo/bar.txt');
-        $newFilename = new Filename(__DIR__ . '/foo/bar2.txt');
-
-        $this->assertFalse($filename->exists());
-        $this->assertFalse($newFilename->exists());
-        $this->assertTrue($filename->isWritable());
-
-        try {
-            touch($filename->asString());
-            $this->assertTrue($filename->exists());
-            $this->assertTrue($filename->isWritable());
-
-            $renamed = $filename->renameTo('bar2.txt');
-            $this->assertEquals($renamed->asString(), $newFilename->asString());
-            $this->assertTrue($newFilename->exists());
-            $this->assertFalse($filename->exists());
-        } finally {
-            @unlink($filename->asString());
-            @unlink($newFilename->asString());
-        }
-    }
-
-    public function testFailedRenameTo() {
-        $filename = new Filename(__DIR__ . '/foo/bar.txt');
-
-        $this->assertFalse($filename->exists());
-        $this->assertTrue($filename->isWritable());
-        $this->expectException(FilenameException::class);
-        $this->expectExceptionMessage('Unable to rename the file.');
-
-        try {
-            touch($filename->asString());
-            $this->assertTrue($filename->exists());
-            $this->assertTrue($filename->isWritable());
-
-            // Make parent directory non writable
-            $mode = fileperms($filename->getDirectory());
-            chmod($filename->getDirectory(), 0000);
-
-            $filename->renameTo('bar2.txt');
-        } finally {
-            if (isset($mode)) {
-                chmod($filename->getDirectory(), $mode);
-            }
-            unlink($filename->asString());
         }
     }
 

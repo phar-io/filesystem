@@ -10,10 +10,6 @@ class Filename {
         $this->name = $name;
     }
 
-    public function __toString(): string {
-        return $this->asString();
-    }
-
     public function asString(): string {
         return $this->name;
     }

@@ -19,12 +19,16 @@ class DirectoryTest extends TestCase {
     }
 
     public function testCanBeConvertedToString() {
-        $this->assertEquals(realpath($this->testDir), (string)(new Directory($this->testDir)));
+        $this->assertEquals(realpath($this->testDir), (new Directory($this->testDir))->asString());
     }
 
     public function testDirectoryIsCreatedWhenMissing() {
         $path = sys_get_temp_dir() . '/test';
-        (new Directory($path, 0770));
+        $directory = new Directory($path);
+        $this->assertFalse($directory->exists());
+
+        $directory->ensureExists(0770);
+        $this->assertTrue($directory->exists());
         $this->assertFileExists($path);
         $this->assertEquals('0770', substr(sprintf('%o', fileperms($path)), -4));
         rmdir($path);
@@ -52,24 +56,20 @@ class DirectoryTest extends TestCase {
             Directory::class,
             $child
         );
-        $this->assertEquals('child', basename((string)$child));
+        $this->assertEquals('child', basename($child->asString()));
     }
 
     public function testThrowsExceptionInvalidMode() {
         $this->expectException(DirectoryException::class);
         $this->expectExceptionCode(DirectoryException::InvalidMode);
-        (new Directory('/', 9999));
+        (new Directory('/'))->ensureExists(9999);
         restore_error_handler();
     }
 
     public function testThrowsExceptionIfGivenPathCannotBeCreated() {
         $this->expectException(DirectoryException::class);
         $this->expectExceptionCode(DirectoryException::CreateFailed);
-        set_error_handler(function () {
-            throw new \ErrorException('caught');
-        });
-        (new Directory('/arbitrary/non/exisiting/path', 0777));
-        restore_error_handler();
+        (new Directory('/arbitrary/non/exisiting/path'))->ensureExists(0777);
     }
 
     /**

@@ -6,16 +6,9 @@ class Directory {
     /** @var string */
     private $path;
 
-    /** @var int */
-    private $mode;
-
-    public function __construct(string $path, int $mode = 0775) {
-        $this->ensureValidMode($mode);
-        $this->mode = $mode;
-
-        $this->ensureExists($path);
+    public function __construct(string $path) {
         $this->ensureIsDirectory($path);
-        $this->path = realpath($path);
+        $this->path = $path;
     }
 
     /*
@@ -23,8 +16,9 @@ class Directory {
      * Credits go to http://stackoverflow.com/users/208809/gordon
      */
     public function getRelativePathTo(Directory $directory): string {
-        $to = (string)$this;
-        $from = (string)$directory;
+        $to = $this->asString();
+        $from = $directory->asString();
+
         // some compatibility fixes for Windows paths
         $from = is_dir($from) ? rtrim($from, '\/') . '/' : $from;
         $to = is_dir($to) ? rtrim($to, '\/') . '/' : $to;
@@ -48,41 +42,50 @@ class Directory {
                     $padLength = (count($relPath) + $remaining - 1) * -1;
                     $relPath = array_pad($relPath, $padLength, '..');
                     break;
-                } else {
-                    $relPath[0] = './' . $relPath[0];
                 }
+
+                $relPath[0] = './' . $relPath[0];
             }
         }
         return implode('/', $relPath);
     }
 
+    public function exists(): bool {
+        clearstatcache(true, $this->path);
+        return file_exists($this->path);
+    }
+
     /**
-     * @param string $path
-     *
      * @throws DirectoryException
      */
-    private function ensureExists(string $path) {
-        if (file_exists($path)) {
-            return;
-        }
+    public function ensureExists(int $mode = 0755): void {
+        $this->ensureValidMode($mode);
+
         try {
-            mkdir($path, $this->mode, true);
-            chmod($path, $this->mode);
-            clearstatcache(true, $path);
+            if (!$this->exists()) {
+                if (!@mkdir($this->path, $mode, true)) {
+                    throw new DirectoryException(
+                        sprintf('Creating directory "%s" failed.', $this->path),
+                        DirectoryException::CreateFailed
+                    );
+                }
+            }
+            clearstatcache(true, $this->path);
+
+            if ((fileperms($this->path) & 0777) !== $mode) {
+                chmod($this->path, $mode);
+            }
         } catch (\ErrorException $e) {
             throw new DirectoryException(
-                sprintf('Creating directory "%s" failed.', $path),
+                sprintf('Creating directory "%s" failed.', $this->path),
                 DirectoryException::CreateFailed,
                 $e
             );
         }
     }
 
-    public function child(string $child, int $mode = null): Directory {
-        return new Directory(
-            $this->path . DIRECTORY_SEPARATOR . $child,
-            $mode !== null ? $mode : $this->mode
-        );
+    public function child(string $child): Directory {
+        return new Directory($this->path . DIRECTORY_SEPARATOR . $child);
     }
 
     public function hasChild(string $child): bool {
@@ -91,10 +94,6 @@ class Directory {
 
     public function file(string $filename): Filename {
         return new Filename($this->path . DIRECTORY_SEPARATOR . $filename);
-    }
-
-    public function __toString(): string {
-        return $this->asString();
     }
 
     public function asString(): string {
@@ -113,9 +112,10 @@ class Directory {
      * @throws DirectoryException
      */
     private function ensureIsDirectory(string $path) {
-        if (is_dir($path)) {
+        if (!file_exists($path) || is_dir($path)) {
             return;
         }
+
         throw new DirectoryException(
             sprintf('Path %s exists but is not a directory', $path),
             DirectoryException::InvalidType
