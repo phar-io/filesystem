@@ -8,7 +8,7 @@ class Directory {
 
     public function __construct(string $path) {
         $this->ensureIsDirectory($path);
-        $this->path = $path;
+        $this->path = realpath($path);
     }
 
     /*
