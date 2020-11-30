@@ -73,4 +73,21 @@ class FilenameTest extends TestCase {
         }
     }
 
+    public function testIsLink() {
+        $filename = new Filename(__DIR__ . '/fixtures/writable/bar.txt');
+        $linkFilename = new Filename(__DIR__ . '/fixtures/writable/link');
+
+        try {
+            touch($filename->asString());
+            $this->assertTrue($filename->exists());
+
+            symlink($filename->asString(), $linkFilename->asString());
+            $this->assertTrue($linkFilename->isLink());
+
+        } finally {
+            unlink($filename->asString());
+            unlink($linkFilename->asString());
+        }
+    }
+
 }

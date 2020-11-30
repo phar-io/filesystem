@@ -18,6 +18,10 @@ class Filename {
         return file_exists($this->name);
     }
 
+    public function isLink(): bool {
+        return is_link($this->name);
+    }
+
     public function isWritable(): bool {
         if (is_writable($this->asString())) {
             return true;
